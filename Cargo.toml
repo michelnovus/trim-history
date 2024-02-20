@@ -1,0 +1,14 @@
+[package]
+name = "trim-history"
+version = "0.1.0"
+authors = ["Michel Novus <michelnovus@gmail.com>"]
+description = "Trims terminal history and more."
+readme = "README.md"
+repository = "https://github.com/michelnovus/trim-history"
+license = "MIT"
+edition = "2021"
+keywords = ["history", "shell"]
+publish = false
+
+[dependencies]
+toml = "0.8.10"

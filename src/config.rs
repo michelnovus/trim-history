@@ -1,9 +1,8 @@
 // [MIT License] Copyright (c) 2024 Michel Novus
 
+use anyhow::{bail, Result};
 use std::env;
-use std::io;
 use std::path::PathBuf;
-use std::process;
 
 /// Name of the history file environment variable.
 const HISTORY_FILE_ENVAR_NAME: &str = "HISTFILE";
@@ -11,7 +10,7 @@ const HISTORY_FILE_ENVAR_NAME: &str = "HISTFILE";
 const SHELL_ENVAR_NAME: &str = "SHELL";
 
 /// Creates the program configuration file.
-pub fn generate_config_file(path: PathBuf) -> io::Result<()> {
+pub fn generate_config_file(path: PathBuf) -> Result<()> {
     Ok(())
 }
 
@@ -22,44 +21,35 @@ pub struct AppConfig {
 
 impl AppConfig {
     /// Generates a new `AppConfig` struct with defaults attributes.
-    pub fn new() -> Self {
-        let history_file = PathBuf::from(
-            env::var(HISTORY_FILE_ENVAR_NAME).unwrap_or_else(|_| {
-                let shell = PathBuf::from(
-                    env::var(SHELL_ENVAR_NAME).unwrap_or_else(|err| {
-                        eprintln!("An error has ocurred: `{}`", err);
-                        process::exit(1);
-                    }),
-                );
-                let history_filename = match shell.file_name().unwrap().to_str()
-                {
-                    Some("bash") => ".bash_history",
-                    Some("zsh") => ".zsh_history",
-                    Some(_shell) => {
-                        eprintln!("There is not implemented for: `{_shell}`");
-                        process::exit(1);
-                    }
-                    None => {
-                        eprintln!(
-                            "It looks like the SHELL environment \
-                        variable is empty."
-                        );
-                        process::exit(1);
-                    }
-                };
-                let user_home = env::var("HOME").unwrap();
-                let history_file =
-                    format!("{}/{}", user_home, history_filename);
-                history_file
-            }),
-        );
-        AppConfig { history_file }
+    pub fn new() -> Result<Self> {
+        let history_file = env::var(HISTORY_FILE_ENVAR_NAME);
+        let history_file = if history_file.is_err() {
+            let shell = env::var(SHELL_ENVAR_NAME)?;
+            // "history file could not be resolved, because \
+            // shell name is unknown"
+            let shell = PathBuf::from(shell);
+            let history_filename = match shell.file_name().unwrap().to_str() {
+                Some("bash") => ".bash_history",
+                Some("zsh") => ".zsh_history",
+                Some(_shell) => {
+                    bail!("not implemented history file for shell: {_shell}");
+                }
+                None => ".bash_history",
+            };
+            let user_home = env::var("HOME")?;
+            let history_file = format!("{}/{}", user_home, history_filename);
+            PathBuf::from(history_file)
+        } else {
+            PathBuf::from(history_file.unwrap())
+        };
+
+        Ok(AppConfig { history_file })
     }
 
     /// Tries to generates a new `AppConfig` struct from file configuration.
     ///
     /// The function return `Err` if file is not valid.
-    pub fn from_file(path: PathBuf) -> io::Result<Self> {
-        Ok(AppConfig::new()) // TODO: Implementar archivo de configuración.
+    pub fn from_file(path: PathBuf) -> Result<Self> {
+        AppConfig::new() // TODO: Implementar archivo de configuración.
     }
 }

@@ -11,4 +11,5 @@ keywords = ["history", "shell"]
 publish = false
 
 [dependencies]
+anyhow = "1.0.80"
 toml = "0.8.10"

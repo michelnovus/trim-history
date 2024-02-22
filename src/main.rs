@@ -1,6 +1,8 @@
 // [MIT License] Copyright (c) 2024 Michel Novus
 
 #![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
 
 use std::env;
 use std::fs;

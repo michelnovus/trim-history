@@ -1,5 +1,7 @@
 // [MIT License] Copyright (c) 2024 Michel Novus
 
+use anyhow::Result;
+use std::fs::{read, write};
 use std::path::PathBuf;
 
 /// Check if path of file contains a dot in name start and history word.
@@ -10,6 +12,28 @@ pub fn is_histfile(path: &PathBuf) -> bool {
     }
     let filename = filename.unwrap().to_str().unwrap();
     filename.contains("history") && filename.starts_with(".")
+}
+
+/// Read text file and split it in lines.
+pub fn readlines(path: &PathBuf) -> Result<Vec<String>> {
+    let raw_file_content = read(path)?;
+    let formated_file_content = String::from_utf8_lossy(&raw_file_content);
+    let lines: Vec<String> = formated_file_content
+        .lines()
+        .map(|str| str.to_owned())
+        .collect();
+    Ok(lines)
+}
+
+/// Write each element of vector as a new line of text file.
+pub fn writelines(path: &PathBuf, lines: &Vec<&str>) -> Result<()> {
+    let mut unified_lines = String::new();
+    let _ = lines
+        .iter()
+        .map(|line| unified_lines.push_str(format!("{line}\n").as_str()))
+        .collect::<Vec<_>>();
+    write(path, unified_lines)?;
+    Ok(())
 }
 
 /// Removes all duplicate elements in string list.

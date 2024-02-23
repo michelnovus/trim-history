@@ -1,5 +1,7 @@
 // [MIT License] Copyright (c) 2024 Michel Novus
 
+#![allow(dead_code, unused_variables)]
+
 use anyhow::{bail, Result};
 use std::env;
 use std::path::PathBuf;

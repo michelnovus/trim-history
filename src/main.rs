@@ -4,8 +4,7 @@ mod config;
 mod functions;
 
 use config::AppConfig;
-use functions::{is_histfile, rm_dups};
-use std::fs::{read, write};
+use functions::*;
 use std::process;
 
 fn main() {
@@ -21,12 +20,12 @@ fn main() {
         );
         process::exit(1);
     }
-    let file_content_raw = read(&config.history_file).unwrap_or_else(|_| {
-        eprintln!("Cannot open {}", &config.history_file.to_str().unwrap());
+    let file_content = readlines(&config.history_file).unwrap_or_else(|err| {
+        eprintln!("Error in read history file: {}", err);
         process::exit(1);
     });
-    let file_content = String::from_utf8_lossy(&file_content_raw);
-    let file_content: Vec<&str> = file_content.lines().collect();
+    let file_content: Vec<&str> =
+        file_content.iter().map(AsRef::as_ref).collect();
 
     let trimed_file = match rm_dups(&file_content) {
         Some(data) => data,
@@ -36,16 +35,7 @@ fn main() {
         }
     };
 
-    let mut trimed_file_raw = String::new();
-    let _ = trimed_file
-        .into_iter()
-        .map(|string| {
-            trimed_file_raw.push_str(format!("{string}\n").as_str());
-        })
-        .collect::<Vec<_>>();
-
-    let trimed_file_raw = trimed_file_raw.into_bytes();
-    write(&config.history_file, trimed_file_raw).unwrap_or_else(|err| {
+    writelines(&config.history_file, &trimed_file).unwrap_or_else(|err| {
         eprintln!("Error on saving: {}", err);
         process::exit(1);
     });
